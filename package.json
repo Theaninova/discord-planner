@@ -1,6 +1,10 @@
 {
   "name": "discord-planner",
   "version": "1.0.0",
+  "scripts": {
+    "build": "tsc",
+    "run": "node build/src/app.js"
+  },
   "dependencies": {
     "@discordjs/rest": "^0.4.1",
     "@discordjs/builders": "^0.13.0",

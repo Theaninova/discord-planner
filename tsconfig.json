@@ -12,9 +12,7 @@
     "sourceMap": true,
     "strict": true,
     "target": "es6",
-    "outDir": "build",
-    "declarationDir": "declarations",
-    "declaration": true
+    "outDir": "build"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts"]
