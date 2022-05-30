@@ -53,7 +53,7 @@ client.on("interactionCreate", async interaction => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     if (interaction.isRepliable()) {
-      await interaction.reply(`:x: ${error.message}`)
+      await interaction.reply({content: `:x: ${error.message}`, ephemeral: true})
     } else {
       console.error(error)
     }

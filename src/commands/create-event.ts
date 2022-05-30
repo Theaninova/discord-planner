@@ -49,13 +49,13 @@ export async function handleCreateEventCommand(interaction: CommandInteraction) 
   const title = interaction.options.getString(eventTitleOptionName)!
 
   if (channel?.type !== "GUILD_TEXT") {
-    await interaction.reply("The channel must be a text channel")
+    await interaction.reply({content: "The channel must be a text channel", ephemeral: true})
     return
   }
 
   const parsedDates = parseDates(dates!)
 
-  await interaction.reply(`:white_check_mark: Event created in ${channel}`)
+  await interaction.reply({content: `:white_check_mark: Event created in ${channel}`, ephemeral: true})
 
   const config = {
     message: parsedDates,
@@ -74,20 +74,20 @@ export async function handleCreateEventCommand(interaction: CommandInteraction) 
 export async function handleCreateEventFinishInteraction(interaction: ButtonInteraction) {
   const config = EVENT_STATE[interaction.channelId]
   if (!config) {
-    await interaction.reply("No event in this channel")
+    await interaction.reply({content: "No event in this channel", ephemeral: true})
     return
   }
 
   delete EVENT_STATE[interaction.channelId]
 
-  await interaction.reply(":white_check_mark: Event finished")
+  await interaction.reply({content: ":white_check_mark: Event finished", ephemeral: true})
   await config.messageElement.edit(createEventMessage(config, false))
 }
 
 export async function handleCreateEventSelectInteraction(interaction: SelectMenuInteraction) {
   const config = EVENT_STATE[interaction.channelId]
   if (!config) {
-    await interaction.reply("No event in this channel")
+    await interaction.reply({content: "No event in this channel", ephemeral: true})
     return
   }
   const userId = interaction.member!.user.id
@@ -106,6 +106,6 @@ export async function handleCreateEventSelectInteraction(interaction: SelectMenu
     config.cantAttend[value].push(userId)
   }
 
-  await interaction.reply(":white_check_mark: Dates Updated")
+  await interaction.reply({content: ":white_check_mark: Dates Updated", ephemeral: true})
   await config.messageElement.edit(createEventMessage(config))
 }
