@@ -6,12 +6,12 @@ import {
 } from "discord.js"
 import {EVENT_STATE} from "../state"
 import {createEventMessage} from "../ui/create-event-message"
-import {client} from "../app"
 
 export const createEventCommandName = "create-event"
 
 const channelOptionName = "channel"
 const datesOptionName = "dates"
+const eventTitleOptionName = "title"
 
 export const createEventSelectCantAttendId = "cant-attend-interaction"
 export const createEventFinishButtonId = "event-finish-button"
@@ -20,7 +20,8 @@ export const createEventCommand = new SlashCommandBuilder()
   .setName(createEventCommandName)
   .setDescription("Create an event")
   .addChannelOption(option => option.setName(channelOptionName).setDescription("The channel to post the event in").setRequired(true))
-  .addStringOption(option => option.setName(datesOptionName).setDescription("Dates of the event").setRequired(true))
+  .addStringOption(option => option.setName(eventTitleOptionName).setDescription("The title of the event").setRequired(true))
+  .addStringOption(option => option.setName(datesOptionName).setDescription("Dates of the event. Example: 2022-06-02@15&16 2022-06-03&@14:30&16").setRequired(true))
 
 function parseDates(dates: string): {
   day: Date
@@ -45,6 +46,7 @@ function parseDates(dates: string): {
 export async function handleCreateEventCommand(interaction: CommandInteraction) {
   const channel = interaction.options.getChannel(channelOptionName)
   const dates = interaction.options.getString(datesOptionName)
+  const title = interaction.options.getString(eventTitleOptionName)!
 
   if (channel?.type !== "GUILD_TEXT") {
     await interaction.reply("The channel must be a text channel")
@@ -57,6 +59,7 @@ export async function handleCreateEventCommand(interaction: CommandInteraction) 
 
   const config = {
     message: parsedDates,
+    title,
     cantAttend: {},
   }
 

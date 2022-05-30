@@ -10,16 +10,16 @@ import {
 import {createEventFinishButtonId, createEventSelectCantAttendId} from "../commands/create-event"
 import {mentionDiscordUser, toDiscordTime} from "../util"
 
-export function createEventMessage(config: Omit<EventState, 'messageElement'>, includeInteraction = true): MessageOptions & MessageEditOptions {
+export function createEventMessage(config: Omit<EventState, 'messageElement'>, inProgress = true): MessageOptions & MessageEditOptions {
   const selected = config.message
     .flatMap(({times}) => times)
     .find(time => !config.cantAttend[time.toISOString()])!
 
   const embed = new MessageEmbed()
-    .setTitle("Next event dates")
-    .setDescription(`Please choose the dates you **can't** attend.
+    .setTitle(config.title)
+    .setDescription(inProgress ? `Please choose the dates you **can't** attend.
 
-Current selection: ${toDiscordTime(selected, 'F')}`)
+Current selection: ${toDiscordTime(selected, 'F')}` : toDiscordTime(selected, 'F'))
     .addFields(config.message.map(({day, times}) => ({
       name: `${toDiscordTime(day, "D")} (${toDiscordTime(day, "R")})`,
       value: times.map(time => {
@@ -33,7 +33,7 @@ Current selection: ${toDiscordTime(selected, 'F')}`)
   const menuSelectValues = config.message.flatMap(({times}) => times)
 
   return {
-    embeds: [embed], components: includeInteraction ? [
+    embeds: [embed], components: inProgress ? [
       new MessageActionRow().addComponents([
         new MessageSelectMenu()
           .setCustomId(createEventSelectCantAttendId)
