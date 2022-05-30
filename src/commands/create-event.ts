@@ -1,9 +1,5 @@
 import {SlashCommandBuilder} from "@discordjs/builders"
-import {
-  ButtonInteraction,
-  CommandInteraction,
-  SelectMenuInteraction,
-} from "discord.js"
+import {ButtonInteraction, CommandInteraction, SelectMenuInteraction} from "discord.js"
 import {EVENT_STATE} from "../state"
 import {createEventMessage} from "../ui/create-event-message"
 
@@ -19,28 +15,36 @@ export const createEventFinishButtonId = "event-finish-button"
 export const createEventCommand = new SlashCommandBuilder()
   .setName(createEventCommandName)
   .setDescription("Create an event")
-  .addChannelOption(option => option.setName(channelOptionName).setDescription("The channel to post the event in").setRequired(true))
-  .addStringOption(option => option.setName(eventTitleOptionName).setDescription("The title of the event").setRequired(true))
-  .addStringOption(option => option.setName(datesOptionName).setDescription("Dates of the event. Example: 2022-06-02@15&16 2022-06-03&@14:30&16").setRequired(true))
+  .addChannelOption(option =>
+    option.setName(channelOptionName).setDescription("The channel to post the event in").setRequired(true),
+  )
+  .addStringOption(option =>
+    option.setName(eventTitleOptionName).setDescription("The title of the event").setRequired(true),
+  )
+  .addStringOption(option =>
+    option
+      .setName(datesOptionName)
+      .setDescription("Dates of the event. Example: 2022-06-02@15&16 2022-06-03&@14:30&16")
+      .setRequired(true),
+  )
 
 function parseDates(dates: string): {
   day: Date
   times: Date[]
 }[] {
-  return dates.split(" ")
-    .map(date => {
-      const [day, times] = date.split("@")
-      const parsedDate = new Date(day)
-      return {
-        day: parsedDate,
-        times: times.split("&").map(time => {
-          const [hour, minute] = time.split(":")
-          const date = new Date(parsedDate)
-          date.setHours(Number(hour), minute ? Number(minute) : 0)
-          return date
-        }),
-      }
-    })
+  return dates.split(" ").map(date => {
+    const [day, times] = date.split("@")
+    const parsedDate = new Date(day)
+    return {
+      day: parsedDate,
+      times: times.split("&").map(time => {
+        const [hour, minute] = time.split(":")
+        const date = new Date(parsedDate)
+        date.setHours(Number(hour), minute ? Number(minute) : 0)
+        return date
+      }),
+    }
+  })
 }
 
 export async function handleCreateEventCommand(interaction: CommandInteraction) {
