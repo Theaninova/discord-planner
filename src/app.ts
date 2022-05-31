@@ -21,13 +21,21 @@ client.once("ready", () => {
 ;(async () => {
   await client.login(secrets.token)
 
-  await rest.put(Routes.applicationGuildCommands(secrets.clientId, secrets.testGuildId), {
-    body: [createEventCommand.toJSON()],
-  })
-
-  await rest.put(Routes.applicationCommands(secrets.clientId), {
-    body: [createEventCommand.toJSON()],
-  })
+  if (secrets.testGuildId) {
+    console.log(
+      await rest.put(Routes.applicationGuildCommands(secrets.clientId, secrets.testGuildId), {
+        body: [createEventCommand.toJSON()],
+      }),
+      "Guild commands updated",
+    )
+  } else {
+    console.log(
+      await rest.put(Routes.applicationCommands(secrets.clientId), {
+        body: [createEventCommand.toJSON()],
+      }),
+      "Global commands updated",
+    )
+  }
 })()
 
 client.on("interactionCreate", async interaction => {

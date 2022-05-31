@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "build": "tsc",
+    "format": "prettier --write .",
     "run": "node build/src/app.js"
   },
   "dependencies": {
