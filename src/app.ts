@@ -18,11 +18,14 @@ const rest = new REST({version: "9"}).setToken(secrets.token)
 client.once("ready", () => {
   console.log("ready")
 })
-
 ;(async () => {
   await client.login(secrets.token)
 
   await rest.put(Routes.applicationGuildCommands(secrets.clientId, secrets.testGuildId), {
+    body: [createEventCommand.toJSON()],
+  })
+
+  await rest.put(Routes.applicationCommands(secrets.clientId), {
     body: [createEventCommand.toJSON()],
   })
 })()

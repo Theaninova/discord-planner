@@ -16,9 +16,6 @@ export const createEventFinishButtonId = "event-finish-button"
 export const createEventCommand = new SlashCommandBuilder()
   .setName(createEventCommandName)
   .setDescription("Create an event")
-  .addChannelOption(option =>
-    option.setName(channelOptionName).setDescription("The channel to post the event in").setRequired(true),
-  )
   .addStringOption(option =>
     option.setName(eventTitleOptionName).setDescription("The title of the event").setRequired(true),
   )
@@ -27,6 +24,9 @@ export const createEventCommand = new SlashCommandBuilder()
       .setName(datesOptionName)
       .setDescription("Dates of the event. Example: 2022-06-02@15&16 2022-06-03&@14:30&16")
       .setRequired(true),
+  )
+  .addChannelOption(option =>
+    option.setName(channelOptionName).setDescription("The channel to post the event in").setRequired(false),
   )
 
 function parseDates(dates: string): ParsedField[] {
@@ -49,11 +49,15 @@ function parseDates(dates: string): ParsedField[] {
 }
 
 export async function handleCreateEventCommand(interaction: CommandInteraction) {
-  const channel = interaction.options.getChannel(channelOptionName)
+  const channel = interaction.options.getChannel(channelOptionName) || interaction.channel
   const dates = interaction.options.getString(datesOptionName)
   const title = interaction.options.getString(eventTitleOptionName)!
 
-  if (channel?.type !== "GUILD_TEXT") {
+  if (
+    channel?.type !== "GUILD_TEXT" &&
+    channel?.type !== "GUILD_PUBLIC_THREAD" &&
+    channel?.type !== "GUILD_PRIVATE_THREAD"
+  ) {
     await interaction.reply({content: "The channel must be a text channel", ephemeral: true})
     return
   }

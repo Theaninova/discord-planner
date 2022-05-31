@@ -19,5 +19,5 @@ export function extractDate(text: string, type: "F" | "R" | "D" | "t"): Date {
 }
 
 export function extractDiscordUsers(text: string): Snowflake[] {
-  return [...text.matchAll(/<@(\d+)>/g)].map(match => match.groups![1])
+  return [...text.matchAll(/<@(\d+)>/g)].map(match => match[1])
 }
