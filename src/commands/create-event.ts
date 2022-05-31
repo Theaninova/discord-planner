@@ -1,7 +1,8 @@
 import {SlashCommandBuilder} from "@discordjs/builders"
-import {ButtonInteraction, CommandInteraction, SelectMenuInteraction} from "discord.js"
-import {EVENT_STATE} from "../state"
+import {ButtonInteraction, CommandInteraction, Message, SelectMenuInteraction} from "discord.js"
 import {createEventMessage} from "../ui/create-event-message"
+import {parseEventMessage} from "../ui/parse-event-message"
+import {ParsedField} from "../ui/event-message"
 
 export const createEventCommandName = "create-event"
 
@@ -28,10 +29,7 @@ export const createEventCommand = new SlashCommandBuilder()
       .setRequired(true),
   )
 
-function parseDates(dates: string): {
-  day: Date
-  times: Date[]
-}[] {
+function parseDates(dates: string): ParsedField[] {
   return dates.split(" ").map(date => {
     const [day, times] = date.split("@")
     const parsedDate = new Date(day)
@@ -41,7 +39,10 @@ function parseDates(dates: string): {
         const [hour, minute] = time.split(":")
         const date = new Date(parsedDate)
         date.setHours(Number(hour), minute ? Number(minute) : 0)
-        return date
+        return {
+          time: date,
+          cantAttend: [],
+        }
       }),
     }
   })
@@ -57,59 +58,43 @@ export async function handleCreateEventCommand(interaction: CommandInteraction) 
     return
   }
 
-  const parsedDates = parseDates(dates!)
+  const fields = parseDates(dates!)
 
   await interaction.reply({content: `:white_check_mark: Event created in ${channel}`, ephemeral: true})
-
-  const config = {
-    message: parsedDates,
-    title,
-    cantAttend: {},
-  }
-
-  const message = await channel.send(createEventMessage(config))
-
-  EVENT_STATE[channel.id] = {
-    messageElement: message,
-    ...config,
-  }
+  await channel.send(
+    createEventMessage({
+      title,
+      fields,
+    }),
+  )
 }
 
 export async function handleCreateEventFinishInteraction(interaction: ButtonInteraction) {
-  const config = EVENT_STATE[interaction.channelId]
-  if (!config) {
-    await interaction.reply({content: "No event in this channel", ephemeral: true})
-    return
-  }
-
-  delete EVENT_STATE[interaction.channelId]
+  const messageElement = interaction.message as Message
+  const message = parseEventMessage(messageElement)
 
   await interaction.reply({content: ":white_check_mark: Event finished", ephemeral: true})
-  await config.messageElement.edit(createEventMessage(config, false))
+  await messageElement.edit(createEventMessage(message, false))
 }
 
 export async function handleCreateEventSelectInteraction(interaction: SelectMenuInteraction) {
-  const config = EVENT_STATE[interaction.channelId]
-  if (!config) {
-    await interaction.reply({content: "No event in this channel", ephemeral: true})
-    return
-  }
+  const messageElement = interaction.message as Message
+  const message = parseEventMessage(messageElement)
   const userId = interaction.member!.user.id
+  const values = interaction.values.reduce((accumulator, value) => {
+    accumulator[value] = value
+    return accumulator
+  }, {} as Record<string, string>)
 
-  for (const key in config.cantAttend) {
-    const filtered = config.cantAttend[key].filter(id => id !== userId)
-    if (filtered.length === 0) {
-      delete config.cantAttend[key]
-    } else {
-      config.cantAttend[key] = filtered
+  for (const field of message.fields) {
+    for (const time of field.times) {
+      time.cantAttend = time.cantAttend.filter(id => id !== userId)
+      if (values[time.time.toISOString()]) {
+        time.cantAttend.push(userId)
+      }
     }
   }
 
-  for (const value of interaction.values) {
-    config.cantAttend[value] = config.cantAttend[value] || []
-    config.cantAttend[value].push(userId)
-  }
-
   await interaction.reply({content: ":white_check_mark: Dates Updated", ephemeral: true})
-  await config.messageElement.edit(createEventMessage(config))
+  await messageElement.edit(createEventMessage(message))
 }

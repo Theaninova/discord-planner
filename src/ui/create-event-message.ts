@@ -1,4 +1,3 @@
-import {EventState} from "../state"
 import {
   MessageActionRow,
   MessageButton,
@@ -9,17 +8,16 @@ import {
 } from "discord.js"
 import {createEventFinishButtonId, createEventSelectCantAttendId} from "../commands/create-event"
 import {mentionDiscordUser, toDiscordTime} from "../util"
+import {ParsedMessage} from "./event-message"
 
 export function createEventMessage(
-  config: Omit<EventState, "messageElement">,
+  message: ParsedMessage,
   inProgress = true,
 ): MessageOptions & MessageEditOptions {
-  const selected = config.message
-    .flatMap(({times}) => times)
-    .find(time => !config.cantAttend[time.toISOString()])!
+  const selected = message.fields.flatMap(({times}) => times).find(time => time.cantAttend.length === 0)!.time
 
   const embed = new MessageEmbed()
-    .setTitle(config.title)
+    .setTitle(message.title)
     .setDescription(
       inProgress
         ? `Please choose the dates you **can't** attend.
@@ -28,20 +26,21 @@ Current selection: ${toDiscordTime(selected, "F")}`
         : toDiscordTime(selected, "F"),
     )
     .addFields(
-      config.message.map(({day, times}) => ({
+      message.fields.map(({day, times}) => ({
         name: `${toDiscordTime(day, "D")} (${toDiscordTime(day, "R")})`,
         value: times
           .map(time => {
-            const cantAttend = config.cantAttend[time.toISOString()]
-            const discordTime = toDiscordTime(time, "t")
-            return cantAttend ? `~~${discordTime}~~ (${cantAttend.map(mentionDiscordUser)})` : discordTime
+            const discordTime = toDiscordTime(time.time, "t")
+            return time.cantAttend.length > 0
+              ? `~~${discordTime}~~ (${time.cantAttend.map(mentionDiscordUser)})`
+              : discordTime
           })
           .join("\n"),
         inline: true,
       })),
     )
 
-  const menuSelectValues = config.message.flatMap(({times}) => times)
+  const menuSelectValues = message.fields.flatMap(({times}) => times)
 
   return {
     embeds: [embed],
@@ -55,8 +54,8 @@ Current selection: ${toDiscordTime(selected, "F")}`
               .setMaxValues(menuSelectValues.length)
               .addOptions(
                 menuSelectValues.map(time => ({
-                  label: time.toLocaleString(),
-                  value: time.toISOString(),
+                  label: time.time.toLocaleString(),
+                  value: time.time.toISOString(),
                 })),
               ),
           ]),
