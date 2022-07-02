@@ -1,4 +1,3 @@
-import secrets from "../secrets.json"
 import {Client, Intents} from "discord.js"
 import {REST} from "@discordjs/rest"
 import {Routes} from "discord-api-types/v9"
@@ -11,26 +10,27 @@ import {
   handleCreateEventFinishInteraction,
   handleCreateEventSelectInteraction,
 } from "./commands/create-event"
+import "dotenv/config"
 
 export const client = new Client({intents: [Intents.FLAGS.GUILDS]})
-const rest = new REST({version: "9"}).setToken(secrets.token)
+const rest = new REST({version: "9"}).setToken(process.env.TOKEN)
 
 client.once("ready", () => {
   console.log("ready")
 })
 ;(async () => {
-  await client.login(secrets.token)
+  await client.login(process.env.TOKEN)
 
-  if (secrets.testGuildId) {
+  if (process.env.TEST_GUILD_ID) {
     console.log(
-      await rest.put(Routes.applicationGuildCommands(secrets.clientId, secrets.testGuildId), {
+      await rest.put(Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.TEST_GUILD_ID), {
         body: [createEventCommand.toJSON()],
       }),
       "Guild commands updated",
     )
   } else {
     console.log(
-      await rest.put(Routes.applicationCommands(secrets.clientId), {
+      await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), {
         body: [createEventCommand.toJSON()],
       }),
       "Global commands updated",
