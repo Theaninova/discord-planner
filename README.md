@@ -1,6 +1,11 @@
 # Scheduler
 
-![](https://img.shields.io/docker/v/theaninova/discord-planner?label=Docker%20Image&logo=docker&logoColor=white&style=for-the-badge)
+[
+![](https://img.shields.io/docker/v/theaninova/discord-planner?label=Docker%20Image&logo=docker&logoColor=white&style=flat)
+](https://hub.docker.com/repository/docker/theaninova/discord-planner)
+[
+![](https://img.shields.io/website?color=5865f2&label=Discord%20Bot&logo=discord&logoColor=white&flat&up_message=Invite&url=https%3A%2F%2Fdiscord.com%2Fapi%2Foauth2%2Fauthorize%3Fclient_id%3D980874521722646548%26permissions%3D277025523712%26scope%3Dbot%2520applications.commands)
+](https://discord.com/api/oauth2/authorize?client_id=980874521722646548&permissions=277025523712&scope=bot%20applications.commands)
 
 Fun and easy bot to coordinate events.
 
@@ -8,8 +13,6 @@ Fun and easy bot to coordinate events.
 
 Doesn't have any security features, but it's easy to use. Don't use
 this on a public server as anyone can add and remove events.
-
-[Invite](https://discord.com/api/oauth2/authorize?client_id=980874521722646548&permissions=277025523712&scope=bot%20applications.commands)
 
 The bot will also probably break if you're creating events from a different
 timezone than the bot is running in (Berlin, in this case) and the dates
